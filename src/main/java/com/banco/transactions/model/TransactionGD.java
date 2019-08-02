@@ -21,6 +21,11 @@ public class TransactionGD {
         this.description = description;
     }
 
+    public TransactionGD(String transactionType, Double transactionAmount) {
+        this.transactionType = transactionType;
+        this.transactionAmount = transactionAmount;
+    }
+
     @JsonProperty("id")
     private String id;
 

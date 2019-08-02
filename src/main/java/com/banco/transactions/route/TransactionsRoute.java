@@ -2,6 +2,7 @@ package com.banco.transactions.route;
 
 import com.banco.transactions.model.TransactionFilterRequest;
 import com.banco.transactions.model.TransactionGD;
+import com.banco.transactions.model.Tuple;
 import com.openbank.Transactions;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -11,16 +12,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Component
 public class TransactionsRoute extends RouteBuilder {
 
-    private final static String TRANSACTION_LIST = "direct:transaction-list";
-    private final static String TRANSACTION_TYPE = "transactionType";
-    private final static String TRANSACTION_AMOUNT = "transactionAmount";
-    private final static String COUNTERPARTY_NAME = "counterpartyName";
+    private static final String TRANSACTION_LIST = "direct:transaction-list";
+    private static final String TRANSACTION_TYPE = "transactionType";
+    private static final String TRANSACTION_AMOUNT = "transactionAmount";
+    private static final String COUNTERPARTY_NAME = "counterpartyName";
 
     @Override
     public void configure() throws Exception {
@@ -36,6 +38,12 @@ public class TransactionsRoute extends RouteBuilder {
                 .routeId("transaction-map")
                 .to(TRANSACTION_LIST)
                 .process(exchange -> map.accept(exchange))
+                .end();
+
+        from("direct:transaction-group")
+                .routeId("transaction-group")
+                .to(TRANSACTION_LIST)
+                .process(exchange -> group.accept(exchange))
                 .end();
 
         from(TRANSACTION_LIST)
@@ -107,5 +115,26 @@ public class TransactionsRoute extends RouteBuilder {
         exchange.setProperty(TRANSACTION_AMOUNT, request.getTransactionAmount());
         exchange.setProperty(COUNTERPARTY_NAME, request.getCounterpartyName());
 
+    };
+
+    private static Consumer<Exchange> group = exchange -> {
+
+        Transactions transactions = exchange.getIn().getBody(Transactions.class);
+
+        List<Tuple> tuples = transactions.getTransactions().stream()
+                .map(transaction -> new Tuple(transaction.getDetails().getType() == null ? "" : transaction.getDetails().getType(),
+                        Double.parseDouble(transaction.getDetails().getValue().getAmount())))
+                .collect(Collectors.toList());
+
+        //tuples.stream().forEach(System.out::println);
+
+        Map <String, Double> grouping = tuples.stream()
+                .collect(Collectors.groupingBy(Tuple::getType, Collectors.summingDouble(Tuple::getValue)));
+
+        List<TransactionGD> transactionsGD = grouping.entrySet().stream()
+                .map(entry -> new TransactionGD(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+
+        exchange.getOut().setBody(new ResponseEntity<>(transactionsGD, HttpStatus.OK));
     };
 }

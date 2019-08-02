@@ -41,4 +41,17 @@ public interface TransactionsApi {
             method = RequestMethod.POST)
     <T> ResponseEntity<?> transactionByFilter(
             @ApiParam(value = "body", required = true) @Valid @RequestBody TransactionFilterRequest body);
+
+    @ApiOperation(value = "GroupByTransactions", nickname = "groupByTransaction", notes = "Group by transactions",
+            response = TransactionGroupResponse.class, tags = {"transactions-group-api-controller", })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Inquery step success", response = TransactionGroupResponse.class),
+            @ApiResponse(code = 424, message = "Invalid Input. please put correct request", response = Errors.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = Errors.class) })
+    @RequestMapping(value = "/transactionGroup",
+            produces = { MediaType.APPLICATION_JSON_UTF8_VALUE },
+            consumes = { MediaType.APPLICATION_JSON_UTF8_VALUE },
+            method = RequestMethod.POST)
+    <T> ResponseEntity<?> transactionGroup(
+            @ApiParam(value = "body", required = true) @Valid @RequestBody TransactionGroupRequest body);
 }
