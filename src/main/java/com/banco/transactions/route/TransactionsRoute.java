@@ -1,12 +1,11 @@
 package com.banco.transactions.route;
 
-import com.banco.transactions.model.TransactionFilterRequest;
-import com.banco.transactions.model.TransactionGD;
-import com.banco.transactions.model.Tuple;
+import com.banco.transactions.model.*;
 import com.openbank.Transactions;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.http.HttpException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -26,6 +25,10 @@ public class TransactionsRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+
+        onException(HttpException.class).handled(true)
+                .process(exchange -> error.accept(exchange))
+                .end();
 
         from("direct:transaction-filter")
                 .routeId("transaction-filter")
@@ -136,5 +139,16 @@ public class TransactionsRoute extends RouteBuilder {
                 .collect(Collectors.toList());
 
         exchange.getOut().setBody(new ResponseEntity<>(transactionsGD, HttpStatus.OK));
+    };
+
+    private static Consumer<Exchange> error = exchange -> {
+
+        Errors errors = new Errors();
+        ErrorDetail detail = new ErrorDetail();
+        detail.setCode("500");
+        detail.setDetail("Problem with the connection.");
+        errors.addErrorsItem(detail);
+
+        exchange.getOut().setBody(new ResponseEntity<>(errors, HttpStatus.SERVICE_UNAVAILABLE));
     };
 }
