@@ -13,7 +13,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     protected void configure(HttpSecurity http) throws Exception
     {
         http
-                .csrf().disable()
+                .csrf().disable() //to disable CSRF (Cross-Site Request Forgery)
                 .authorizeRequests().anyRequest().authenticated()
                 .and()
                 .httpBasic();
