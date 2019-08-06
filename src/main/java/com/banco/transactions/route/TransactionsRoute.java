@@ -3,6 +3,7 @@ package com.banco.transactions.route;
 import com.banco.transactions.model.*;
 import com.openbank.Transactions;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.http.HttpException;
@@ -55,6 +56,7 @@ public class TransactionsRoute extends RouteBuilder {
                 .setHeader(Exchange.HTTP_METHOD, constant("GET"))
                 .setHeader(Exchange.HTTP_PATH, simple("/obp/v1.2.1/banks/rbs/accounts/savings-kids-john/public/transactions"))
                 .setBody(simple(null))
+                .log(LoggingLevel.INFO, "${headers}")
                 .to("https4://apisandbox.openbankproject.com")
                 .unmarshal().json(JsonLibrary.Jackson, Transactions.class)
                 .end();
@@ -89,7 +91,10 @@ public class TransactionsRoute extends RouteBuilder {
                         transaction.getDetails().getDescription()))
                 .collect(Collectors.toList());
 
-        exchange.getOut().setBody(new ResponseEntity<>(transactionsGD, HttpStatus.OK));
+        TransactionFilterResponse response = new TransactionFilterResponse();
+        response.setTransactions(transactionsGD);
+
+        exchange.getOut().setBody(new ResponseEntity<>(response, HttpStatus.OK));
     };
 
     private static Consumer<Exchange> map = exchange -> {
@@ -107,7 +112,10 @@ public class TransactionsRoute extends RouteBuilder {
                         transaction.getDetails().getDescription()))
                 .collect(Collectors.toList());
 
-        exchange.getOut().setBody(new ResponseEntity<>(transactionsGD, HttpStatus.OK));
+        TransactionListResponse response = new TransactionListResponse();
+        response.setTransactions(transactionsGD);
+
+        exchange.getOut().setBody(new ResponseEntity<>(response, HttpStatus.OK));
     };
 
     private static Consumer<Exchange> saveRequest = exchange -> {
@@ -138,7 +146,10 @@ public class TransactionsRoute extends RouteBuilder {
                 .map(entry -> new TransactionGD(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
 
-        exchange.getOut().setBody(new ResponseEntity<>(transactionsGD, HttpStatus.OK));
+        TransactionGroupResponse response = new TransactionGroupResponse();
+        response.setTransactions(transactionsGD);
+
+        exchange.getOut().setBody(new ResponseEntity<>(response, HttpStatus.OK));
     };
 
     private static Consumer<Exchange> error = exchange -> {

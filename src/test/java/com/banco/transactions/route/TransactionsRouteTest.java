@@ -47,13 +47,13 @@ public class TransactionsRouteTest extends CamelTestSupport {
         TransactionListRequest request = new TransactionListRequest();
 
         //Act
-        ResponseEntity<List<TransactionGD>> response = (ResponseEntity<List<TransactionGD>>)fluentTemplate.withBody(request)
+        ResponseEntity<TransactionListResponse> response = (ResponseEntity<TransactionListResponse>)fluentTemplate.withBody(request)
                 .to("direct:transaction-map")
                 .request();
 
         //Assert
         mockEndpointHttp4.assertIsSatisfied();
-        assertEquals(50, response.getBody().size());
+        assertEquals(50, response.getBody().getTransactions().size());
     }
 
     @Test
@@ -69,13 +69,13 @@ public class TransactionsRouteTest extends CamelTestSupport {
         request.setTransactionType("SANDBOX_TAN");
 
         //Act
-        ResponseEntity<List<TransactionGD>> response = (ResponseEntity<List<TransactionGD>>)fluentTemplate.withBody(request)
+        ResponseEntity<TransactionFilterResponse> response = (ResponseEntity<TransactionFilterResponse>)fluentTemplate.withBody(request)
                 .to("direct:transaction-filter")
                 .request();
 
         //Assert
         mockEndpointHttp4.assertIsSatisfied();
-        assertEquals(2, response.getBody().size());
+        assertEquals(2, response.getBody().getTransactions().size());
     }
 
     @Test
@@ -90,13 +90,13 @@ public class TransactionsRouteTest extends CamelTestSupport {
         TransactionGroupRequest request = new TransactionGroupRequest();
 
         //Act
-        ResponseEntity<List<TransactionGD>> response = (ResponseEntity<List<TransactionGD>>)fluentTemplate.withBody(request)
+        ResponseEntity<TransactionGroupResponse> response = (ResponseEntity<TransactionGroupResponse>)fluentTemplate.withBody(request)
                 .to("direct:transaction-group")
                 .request();
 
         //Assert
         mockEndpointHttp4.assertIsSatisfied();
-        assertEquals(3, response.getBody().size());
+        assertEquals(3, response.getBody().getTransactions().size());
     }
 
     @Test
@@ -123,7 +123,7 @@ public class TransactionsRouteTest extends CamelTestSupport {
         TransactionListRequest request = new TransactionListRequest();
 
         //Act
-        Object response = (ResponseEntity<List<TransactionGD>>)fluentTemplate.withBody(request)
+        Object response = fluentTemplate.withBody(request)
                 .to("direct:transaction-map")
                 .request();
 

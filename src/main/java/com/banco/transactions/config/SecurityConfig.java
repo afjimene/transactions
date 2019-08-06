@@ -14,9 +14,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     {
         http
                 .csrf().disable() //to disable CSRF (Cross-Site Request Forgery)
-                .authorizeRequests().anyRequest().authenticated()
-                .and()
-                .httpBasic();
+                .authorizeRequests()
+                    .antMatchers("/base/**").hasRole("USER").and().httpBasic()
+                    .and().authorizeRequests().anyRequest().permitAll();
     }
 
     @Autowired
@@ -24,8 +24,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
             throws Exception
     {
         auth.inMemoryAuthentication()
-                .withUser("admin")
-                .password("{noop}password")
-                .roles("USER");
+                .withUser("admin").password("{noop}password").roles("ADMIN").and()
+                .withUser("user").password("{noop}password").roles("USER");
     }
 }

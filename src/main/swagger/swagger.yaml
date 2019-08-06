@@ -8,11 +8,13 @@ info:
     url: 'https://github.com/afjimene'
     email: afjimene@gmail.com
   license:
-    name: License
+    name: license
     url: 'http://unlicense.org'
 host: 'localhost:8080'
 basePath: /
 tags:
+  - name: hello-controller
+    description: Hello Controller
   - name: transactions-api-controller
     description: Transactions Api Controller
 paths:
@@ -136,6 +138,26 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
       deprecated: false
+  /hello:
+    get:
+      tags:
+        - hello-controller
+      summary: sayHello
+      operationId: sayHelloUsingGET
+      produces:
+        - '*/*'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
 definitions:
   ErrorDetail:
     type: object
@@ -183,16 +205,68 @@ definitions:
     title: TransactionFilterRequest
   TransactionFilterResponse:
     type: object
+    required:
+      - transactions
+    properties:
+      transactions:
+        type: array
+        description: List of filter transactions.
+        items:
+          $ref: '#/definitions/TransactionGD'
     title: TransactionFilterResponse
+  TransactionGD:
+    type: object
+    properties:
+      accountId:
+        type: string
+      counterPartyLogoPath:
+        type: string
+      counterpartyAccount:
+        type: string
+      counterpartyName:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      instructedAmount:
+        type: number
+        format: double
+      instructedCurrency:
+        type: string
+      transactionAmount:
+        type: number
+        format: double
+      transactionCurrency:
+        type: string
+      transactionType:
+        type: string
+    title: TransactionGD
   TransactionGroupRequest:
     type: object
     title: TransactionGroupRequest
   TransactionGroupResponse:
     type: object
+    required:
+      - transactions
+    properties:
+      transactions:
+        type: array
+        description: List of grouped transactions.
+        items:
+          $ref: '#/definitions/TransactionGD'
     title: TransactionGroupResponse
   TransactionListRequest:
     type: object
     title: TransactionListRequest
   TransactionListResponse:
     type: object
+    required:
+      - transactions
+    properties:
+      transactions:
+        type: array
+        description: List of mapped transactions.
+        items:
+          $ref: '#/definitions/TransactionGD'
     title: TransactionListResponse
